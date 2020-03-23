@@ -146,6 +146,7 @@ func parseUnsafeRoutes(config *Config, network *net.IPNet) ([]route, error) {
 		}
 
 		r := route{
+			mtu: mtu,
 			via: &nVia,
 		}
 
