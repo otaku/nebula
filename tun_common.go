@@ -9,9 +9,10 @@ import (
 const DEFAULT_MTU = 1300
 
 type route struct {
-	mtu   int
-	route *net.IPNet
-	via   *net.IP
+	mtu      int
+	priority *int
+	route    *net.IPNet
+	via      *net.IP
 }
 
 func parseRoutes(config *Config, network *net.IPNet) ([]route, error) {
@@ -148,6 +149,19 @@ func parseUnsafeRoutes(config *Config, network *net.IPNet) ([]route, error) {
 		r := route{
 			via: &nVia,
 			mtu: mtu,
+		}
+
+		if rPriority, ok := m["priority"]; ok {
+			if p, ok := rPriority.(int); ok {
+				r.priority = &p
+			} else {
+				p, err := strconv.Atoi(rPriority.(string))
+				if err != nil {
+					return nil, fmt.Errorf("entry %v.priority in tun.unsafe_routes is not an integer: %v", i+1, err)
+				}
+
+				r.priority = &p
+			}
 		}
 
 		_, r.route, err = net.ParseCIDR(fmt.Sprintf("%v", rRoute))
