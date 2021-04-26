@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"unsafe"
 
@@ -304,9 +305,17 @@ func (c Tun) Activate() error {
 			Scope:     unix.RT_SCOPE_LINK,
 		}
 
+		if r.priority != nil {
+			nr.Priority = *r.priority
+		}
+
 		err = netlink.RouteAdd(&nr)
 		if err != nil {
-			return fmt.Errorf("failed to set mtu %v on route %v; %v", r.mtu, r.route, err)
+			priority := ""
+			if r.priority != nil {
+				priority = "priority" + strconv.Itoa(*r.priority)
+			}
+			return fmt.Errorf("failed to set mtu %v %s on unsafe route %v; %v", r.mtu, priority, r.route, err)
 		}
 	}
 
